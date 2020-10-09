@@ -58,6 +58,13 @@ function renderCircles(circlesGroup, newXScale, chosenAxis) {
   return circlesGroup;
 };
 
+function renderCircLabel(cirLabelGroup,newXScale, chosenAxis) {
+  cirLabelGroup.transition()
+  .duration(1000)
+  .attr("x", d => newXScale(d[chosenAxis]));
+
+  return cirLabelGroup;
+  };
 
 
 var url = "./assets/data/data.csv";
@@ -72,18 +79,11 @@ d3.csv(url).then(function(healthData) {
      };
 
     console.log(healthData[1].healthcare)
-    // Step 1: Parse Data/Cast as numbers
-    // ==============================
+    
     healthData.forEach(function(data) {
         data.poverty = +data.poverty;
         data.healthcare = +data.healthcare;
       });
-
-  // Step 2: Create scale functions
-    // ==============================
-    // var xLinearScale = d3.scaleLinear()
-    //   .domain([8, d3.max(healthData, d => d.poverty)])
-    //   .range([0, width]);
 
     var xLinearScale = xScale(healthData, chosenXAxis);
 
@@ -91,15 +91,11 @@ d3.csv(url).then(function(healthData) {
       .domain([0, d3.max(healthData, d => d.healthcare)])
       .range([height, 0]);
 
-    // Step 3: Create axis functions
-    // ==============================
-    // var bottomAxis = d3.axisBottom(xLinearScale);
-
+   
     var bottomAxis = d3.axisBottom(xLinearScale);
     var leftAxis = d3.axisLeft(yLinearScale);
 
-    // Step 4: Append Axes to the chart
-    // ==============================
+   
     var xAxis = chartGroup.append("g")
       .classed("x-axis", true)
       .attr("transform", `translate(0, ${height})`)
@@ -111,7 +107,7 @@ d3.csv(url).then(function(healthData) {
     var r = 10;
        // Step 5: Create Circles
     // ==============================
-    var circlesGroup = chartGroup.selectAll(".circle")
+  var circlesGroup = chartGroup.selectAll(".circle")
     .data(healthData)
     .enter()
     .append("circle")
@@ -123,13 +119,12 @@ d3.csv(url).then(function(healthData) {
     .attr("opacity", "0.75");
     
 
-chartGroup.selectAll(".circle") 
+var cirLabelGroup = chartGroup.selectAll(".circle") 
   .data(healthData)
   .enter()
   .append("text") 
-  //.merge(selection)
-  .attr("x", d => xLinearScale(d[chosenXAxis]-r/2))
-  .attr("y", d => yLinearScale(d.healthcare+r/2))
+  .attr("x", d => xLinearScale(d[chosenXAxis])-r/2)
+  .attr("y", d => yLinearScale(d.healthcare)+r/2)
   .attr("font-family", "sans-serif")
   .attr("font-size", "8px")
   .attr("fill", "black")
@@ -172,6 +167,9 @@ labelsGroup.selectAll("text")
       xLinearScale = xScale(healthData, chosenXAxis);
       xAxis = renderAxes(xLinearScale,xAxis);
 
+      circlesGroup = renderCircles(circlesGroup, xLinearScale, chosenXAxis);
+      cirLabelGroup = renderCirLabel(cirLabelGroup,xLinearScale, chosenXAxis);
+
       if (chosenXAxis === "poverty") {
         povertyLabel
           .classed("active", true)
@@ -189,8 +187,10 @@ labelsGroup.selectAll("text")
           .classed("inactive", false);
       }
     }
+    
+  });
 
-    });
+//
 
   
     
