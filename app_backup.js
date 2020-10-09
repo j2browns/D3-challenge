@@ -5,7 +5,7 @@ var svgHeight = 500;
 var margin = {
   top: 20,
   right: 40,
-  bottom: 100,
+  bottom: 80,
   left: 100
 };
 
@@ -22,42 +22,6 @@ var svg = d3
 
 var chartGroup = svg.append("g")
   .attr("transform", `translate(${margin.left}, ${margin.top})`);
-
-var chosenXAxis = "poverty"; //setting initial axis
-
-// function used for updating x-scale var upon click on axis label
-function xScale(passData,chosenAxis) {
-  //create scales
-  var xLinearScale = d3.scaleLinear()
-      .domain([d3.min(passData, d => d[chosenAxis])*0.9, d3.max(passData, d => d[chosenAxis])*1.1])
-      .range([0, width]);
-    return xLinearScale
-
-};
-
-// function used for updating xAxis var upon click on axis label
-function renderAxes(newXScale, xAxis){
-  var bottomAxis = d3.axisBottom(newXScale);
-
-  xAxis.transition()
-    .duration(1000)
-    .call(bottomAxis);
-
-  return xAxis;
-};
-
-// function used for updating circles group with a transition to
-// new circles
-
-function renderCircles(circlesGroup, newXScale, chosenAxis) {
-
-  circlesGroup.transition()
-    .duration(1000)
-    .attr("cx", d => newXScale(d[chosenAxis]));
-
-  return circlesGroup;
-};
-
 
 
 var url = "./assets/data/data.csv";
@@ -81,11 +45,9 @@ d3.csv(url).then(function(healthData) {
 
   // Step 2: Create scale functions
     // ==============================
-    // var xLinearScale = d3.scaleLinear()
-    //   .domain([8, d3.max(healthData, d => d.poverty)])
-    //   .range([0, width]);
-
-    var xLinearScale = xScale(healthData, chosenXAxis);
+    var xLinearScale = d3.scaleLinear()
+      .domain([8, d3.max(healthData, d => d.poverty)])
+      .range([0, width]);
 
     var yLinearScale = d3.scaleLinear()
       .domain([0, d3.max(healthData, d => d.healthcare)])
@@ -93,15 +55,12 @@ d3.csv(url).then(function(healthData) {
 
     // Step 3: Create axis functions
     // ==============================
-    // var bottomAxis = d3.axisBottom(xLinearScale);
-
     var bottomAxis = d3.axisBottom(xLinearScale);
     var leftAxis = d3.axisLeft(yLinearScale);
 
     // Step 4: Append Axes to the chart
     // ==============================
     chartGroup.append("g")
-      .classed("x-axis", true)
       .attr("transform", `translate(0, ${height})`)
       .call(bottomAxis);
 
@@ -115,7 +74,7 @@ d3.csv(url).then(function(healthData) {
     .data(healthData)
     .enter()
     .append("circle")
-    .attr("cx", d => xLinearScale(d[chosenXAxis]))
+    .attr("cx", d => xLinearScale(d.poverty))
     .attr("cy", d => yLinearScale(d.healthcare))
     .attr("r", r)
     // .text( d=>(d.abbr))
@@ -137,22 +96,7 @@ chartGroup.selectAll(".circle")
       return (d.abbr);
   });
 
-var labelsGroup = chartGroup.append("g")
-  .attr("transform", `translate(${width / 2}, ${height + margin.top + 30})`);
 
-var povertyLabel = labelsGroup.append("text")
-.attr("x",0)
-.attr("y",20)
-.attr("value", "poverty")//value for event listener
-.classed("active",true)
-.text("% in Poverty");
-
-var povertyLabel = labelsGroup.append("text")
-.attr("x",0)
-.attr("y",40)
-.attr("value", "income")//value for event listener
-.classed("active",true)
-.text("House Hold Median Income");
     
 // Step 6: Initialize tool tip
     // ==============================
@@ -185,10 +129,10 @@ var povertyLabel = labelsGroup.append("text")
       .attr("class", "axisText")
       .text("% Lacking Healthcare");
 
-    // chartGroup.append("text")
-    //   .attr("transform", `translate(${width / 2}, ${height + margin.top + 30})`)
-    //   .attr("class", "axisText")
-    //   .text("% in Poverty");
+    chartGroup.append("text")
+      .attr("transform", `translate(${width / 2}, ${height + margin.top + 30})`)
+      .attr("class", "axisText")
+      .text("% in Poverty");
 
 }).catch(function(error){console.log(error)});
 
