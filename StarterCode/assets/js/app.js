@@ -36,7 +36,7 @@ function xScale(passData,chosenAxis) {
 };
 
 // function used for updating xAxis var upon click on axis label
-function renderAxes(newXScale, xAxis){
+function renderAxes(newXScale, xAxis) {
   var bottomAxis = d3.axisBottom(newXScale);
 
   xAxis.transition()
@@ -100,7 +100,7 @@ d3.csv(url).then(function(healthData) {
 
     // Step 4: Append Axes to the chart
     // ==============================
-    chartGroup.append("g")
+    var xAxis = chartGroup.append("g")
       .classed("x-axis", true)
       .attr("transform", `translate(0, ${height})`)
       .call(bottomAxis);
@@ -128,8 +128,8 @@ chartGroup.selectAll(".circle")
   .enter()
   .append("text") 
   //.merge(selection)
-  .attr("x", d => xLinearScale(d.poverty)-r/2)
-  .attr("y", d => yLinearScale(d.healthcare)+r/2)
+  .attr("x", d => xLinearScale(d[chosenXAxis]-r/2))
+  .attr("y", d => yLinearScale(d.healthcare+r/2))
   .attr("font-family", "sans-serif")
   .attr("font-size", "8px")
   .attr("fill", "black")
@@ -137,24 +137,64 @@ chartGroup.selectAll(".circle")
       return (d.abbr);
   });
 
+   // Create axes labels
+chartGroup.append("text")
+   .attr("transform", "rotate(-90)")
+   .attr("y", 0 - margin.left +20)
+   .attr("x", 0 - (height / 2 + 50))
+   .attr("dy", "1em")
+   .attr("class", "axisText")
+   .text("% Lacking Healthcare");
+
 var labelsGroup = chartGroup.append("g")
   .attr("transform", `translate(${width / 2}, ${height + margin.top + 30})`);
 
 var povertyLabel = labelsGroup.append("text")
-.attr("x",0)
-.attr("y",20)
-.attr("value", "poverty")//value for event listener
-.classed("active",true)
-.text("% in Poverty");
+  .attr("x",0)
+  .attr("y",20)
+  .attr("value", "poverty")//value for event listener
+  .classed("active",true)
+  .text("% in Poverty");
 
-var povertyLabel = labelsGroup.append("text")
-.attr("x",0)
-.attr("y",40)
-.attr("value", "income")//value for event listener
-.classed("active",true)
-.text("House Hold Median Income");
+var incomeLabel = labelsGroup.append("text")
+  .attr("x",0)
+  .attr("y",40)
+  .attr("value", "income")//value for event listener
+  .classed("active",true)
+  .text("House Hold Median Income");
+
+labelsGroup.selectAll("text")
+  .on("click", function() {
+    var value = d3.select(this).attr("value");
+    if (value !== chosenXAxis) {
+
+      chosenXAxis = value;
+      xLinearScale = xScale(healthData, chosenXAxis);
+      xAxis = renderAxes(xLinearScale,xAxis);
+
+      if (chosenXAxis === "poverty") {
+        povertyLabel
+          .classed("active", true)
+          .classed("inactive", false);
+        incomeLabel
+          .classed("active", false)
+          .classed("inactive", true);
+      }
+      else {
+        povertyLabel
+          .classed("active", false)
+          .classed("inactive", true);
+        incomeLabel
+          .classed("active", true)
+          .classed("inactive", false);
+      }
+    }
+
+    });
+
+  
     
-// Step 6: Initialize tool tip
+//  Initialize tool tip
     // ==============================
     var toolTip = d3.tip()
       .attr("class", "tooltip")
@@ -162,11 +202,11 @@ var povertyLabel = labelsGroup.append("text")
       .html(function(d) {
         return (`${d.state}<br>Poverty: ${d.poverty}<br>Lacking Healthcare: ${d.healthcare}`);
       });
-// Step 7: Create tooltip in the chart
+//  Create tooltip in the chart
     // ==============================
     chartGroup.call(toolTip);
 
-    // Step 8: Create event listeners to display and hide the tooltip
+//  Create event listeners to display and hide the tooltip
     // ==============================
     circlesGroup.on("click", function(data) {
       toolTip.show(data, this);
@@ -176,14 +216,7 @@ var povertyLabel = labelsGroup.append("text")
         toolTip.hide(data);
       });
 
-    // Create axes labels
-    chartGroup.append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("y", 0 - margin.left +20)
-      .attr("x", 0 - (height / 2 + 50))
-      .attr("dy", "1em")
-      .attr("class", "axisText")
-      .text("% Lacking Healthcare");
+ 
 
     // chartGroup.append("text")
     //   .attr("transform", `translate(${width / 2}, ${height + margin.top + 30})`)
