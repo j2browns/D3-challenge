@@ -3,9 +3,9 @@ var svgWidth = 960;
 var svgHeight = 500;
 
 var margin = {
-  top: 20,
+  top: 50,
   right: 40,
-  bottom: 100,
+  bottom: 150,
   left: 100
 };
 
@@ -32,7 +32,7 @@ var chosenXAxis = "poverty"; //setting initial axis
 function xScale(passData,chosenAxis) {
   //create scales
   var xLinearScale = d3.scaleLinear()
-      .domain([d3.min(passData, d => d[chosenAxis])*0.9, d3.max(passData, d => d[chosenAxis])*1.1])
+      .domain([d3.min(passData, d => d[chosenAxis])*0.9, d3.max(passData, d => d[chosenAxis])*1.2])
       .range([0, width]);
     return xLinearScale
 
@@ -119,6 +119,8 @@ d3.csv(url).then(function(healthData) {
     .attr("cx", d => xLinearScale(d[chosenXAxis]))
     .attr("cy", d => yLinearScale(d.healthcare))
     .attr("r", r)
+    .attr("stroke", "black")
+    .attr("stroke-width", "2")
     .attr("fill", "lightblue")
     .attr("opacity", "0.75");
     
@@ -179,10 +181,14 @@ var incomeLabel = labelsGroup.append("text")
 //  Create event listeners to display and hide the tooltip
 // ==============================
   circlesGroup.on("mouseover", function(data) {
+    d3.select(this).attr("opacity", "1");
+    d3.select(this).attr("fill", "yellow");
     toolTip.show(data, this);
   })
 // onmouseout event
     .on("mouseout", function(data, index) {
+      d3.select(this).attr("opacity", "0.75");
+      d3.select(this).attr("fill", "lightblue");
       toolTip.hide(data);
     });
 
