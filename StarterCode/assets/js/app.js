@@ -64,7 +64,8 @@ function renderCircles(circlesGroup, newXScale, chosenAxis) {
 function renderCircLabel(cirLabelGroup,newXScale, chosenAxis,r) {
   cirLabelGroup.transition()
   .duration(1000)
-  .attr("x", d => newXScale(d[chosenAxis])-r/2);
+  .attr("x", d => newXScale(d[chosenAxis])-r/2)
+  .attr("fill", "darkblue");
 
   return cirLabelGroup;
   };
@@ -109,7 +110,7 @@ d3.csv(url).then(function(healthData) {
     chartGroup.append("g")
       .call(leftAxis);
     
-  var r = 10; //radius for circles
+  var r = 20; //radius for circles
       
   var circlesGroup = chartGroup.selectAll(".circle")
     .data(healthData)
@@ -129,7 +130,7 @@ var cirLabelGroup = chartGroup.selectAll(".text")
   .attr("x", d => xLinearScale(d[chosenXAxis])-r/2)
   .attr("y", d => yLinearScale(d.healthcare)+r/2)
   .attr("font-family", "sans-serif")
-  .attr("font-size", "8px")
+  .attr("font-size", "10px")
   .attr("fill", "black")
   .text( function(d) {
       return (d.abbr);
@@ -161,7 +162,7 @@ var incomeLabel = labelsGroup.append("text")
   .classed("active",true)
   .text("House Hold Median Income");
 
-    
+//*******************Tool Tip Section*********************************/    
 //  Initialize tool tip
 // ==============================
   var toolTip = d3.tip()
@@ -170,13 +171,14 @@ var incomeLabel = labelsGroup.append("text")
     .html(function(d) {
       return (`${d.state}<br>Poverty: ${d.poverty}<br> Median Income: ${d.income}<br> Lacking Healthcare: ${d.healthcare}`);
     });
+
 //  Create tooltip in the chart
 // ==============================
   chartGroup.call(toolTip);
 
 //  Create event listeners to display and hide the tooltip
 // ==============================
-  circlesGroup.on("click", function(data) {
+  circlesGroup.on("mouseover", function(data) {
     toolTip.show(data, this);
   })
 // onmouseout event
