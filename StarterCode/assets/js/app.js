@@ -35,7 +35,8 @@ var chartGroup = svg.append("g")
   .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
 var chosenXAxis = "poverty"; //setting initial axis value to display on graph
-
+var axisNum = 0;
+cirColor = ["lightblue", "yellow"]
 //**********************************************************************/
 //****************Defining Functions ***********************************/
 
@@ -64,10 +65,11 @@ function renderAxes(newXScale, xAxis) {
 
 //**********************************************************************/
 // function used for updating circles when switch axis
-function renderCircles(circlesGroup, newXScale, chosenAxis) {
+function renderCircles(circlesGroup, newXScale, chosenAxis, cirColor) {
   circlesGroup.transition()
     .duration(1000)
-    .attr("cx", d => newXScale(d[chosenAxis]));
+    .attr("cx", d => newXScale(d[chosenAxis]))
+    .attr("fill", cirColor);
   return circlesGroup;
 };
 
@@ -186,6 +188,7 @@ var incomeLabel = labelsGroup.append("text")
   var toolTip = d3.tip()
     .attr("class", "tooltip")
     .offset([80, -60])
+    .style("background",cirColor[(1-axisNum)])
     .html(function(d) {
       return (`${d.state}<br>Poverty: ${d.poverty}<br> Median Income: ${d.income}<br> Lacking Healthcare: ${d.healthcare}`);
     });
@@ -198,13 +201,14 @@ var incomeLabel = labelsGroup.append("text")
 // ==============================
   circlesGroup.on("mouseover", function(data) {
     d3.select(this).attr("opacity", "1");//make fill solid
-    d3.select(this).attr("fill", "yellow");//change color
-    toolTip.show(data, this);
+    d3.select(this).attr("fill", cirColor[(1-axisNum)]);//change color
+    toolTip.show(data, this)
+    .style("background",cirColor[(1-axisNum)]);//makes circle and tool tip data box have same color
   })
 // onmouseout event - clearing on mouse out
     .on("mouseout", function(data, index) {
       d3.select(this).attr("opacity", "0.75");//back to original opacity
-      d3.select(this).attr("fill", "lightblue");//back to original color
+      d3.select(this).attr("fill", cirColor[axisNum]);//back to original color
       toolTip.hide(data);
     });
 
@@ -219,10 +223,9 @@ labelsGroup.selectAll("text")
       xLinearScale = xScale(healthData, chosenXAxis);
       xAxis = renderAxes(xLinearScale,xAxis);
 
-      circlesGroup = renderCircles(circlesGroup, xLinearScale, chosenXAxis);
-      cirLabelGroup = renderCircLabel(cirLabelGroup,xLinearScale, chosenXAxis,r);
-
+      
       if (chosenXAxis === "poverty") {
+        axisNum = 0;
         povertyLabel
           .classed("active", true)
           .classed("inactive", false);
@@ -231,6 +234,7 @@ labelsGroup.selectAll("text")
           .classed("inactive", true);
       }
       else {
+        axisNum = 1;
         povertyLabel
           .classed("active", false)
           .classed("inactive", true);
@@ -238,6 +242,10 @@ labelsGroup.selectAll("text")
           .classed("active", true)
           .classed("inactive", false);
       };
+
+    circlesGroup = renderCircles(circlesGroup, xLinearScale, chosenXAxis, cirColor[axisNum]);
+    cirLabelGroup = renderCircLabel(cirLabelGroup,xLinearScale, chosenXAxis,r);
+
     };
     
   });
