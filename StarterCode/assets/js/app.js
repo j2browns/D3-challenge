@@ -52,8 +52,18 @@ function xScale(passData,chosenAxis) {
 };
 
 //**********************************************************************/
+// function used for updating y-scale var upon click on axis label
+// function yScale(passData,chosenAxis) {
+//   //create scales
+//   var yLinearScale = d3.scaleLinear()
+//     // Axis is set to have minimum at 85% of data minimum and 115% of maximum so looks nicely placed on axis
+//       .domain([d3.min(passData, d => d[chosenAxis])*0.85, d3.max(passData, d => d[chosenAxis])*1.15])
+//       .range([0, height]);
+//     return yLinearScale
+// };
+//**********************************************************************/
 // function used for updating xAxis var upon click on axis label
-function renderAxes(newXScale, xAxis) {
+function renderXAxes(newXScale, xAxis) {
   var bottomAxis = d3.axisBottom(newXScale);
 
   xAxis.transition()
@@ -64,8 +74,19 @@ function renderAxes(newXScale, xAxis) {
 };
 
 //**********************************************************************/
-// function used for updating circles when switch axis
-function renderCircles(circlesGroup, newXScale, chosenXAxis, cirColor) {
+// function used for updating xAxis var upon click on axis label
+function renderYAxes(newYScale, YAxis) {
+  var bottomAxis = d3.axisLeft(newYScale);
+
+  yAxis.transition()
+    .duration(1000)
+    .call(leftAxis);
+
+  return yAxis;
+};
+//**********************************************************************/
+// function used for updating circles when switch x-axis
+function renderXCircles(circlesGroup, newXScale, chosenXAxis, cirColor) {
   circlesGroup.transition()
     .duration(1000)
     .attr("cx", d => newXScale(d[chosenXAxis]))
@@ -74,12 +95,32 @@ function renderCircles(circlesGroup, newXScale, chosenXAxis, cirColor) {
 };
 
 //**********************************************************************/
+// function used for updating circles when switch y-axis
+function renderYCircles(circlesGroup, newYScale, chosenYAxis, cirColor) {
+  circlesGroup.transition()
+    .duration(1000)
+    .attr("cy", d => newXScale(d[chosenYAxis]))
+    .attr("fill", cirColor);
+  return circlesGroup;
+};
+//**********************************************************************/
 //function used for updating label of circles (state abbreviation)
 //using render function clears previous marker location
-function renderCircLabel(cirLabelGroup,newXScale, chosenAxis,r) {
+function renderXCircLabel(cirLabelGroup,newXScale, chosenAxis,r) {
   cirLabelGroup.transition()
   .duration(1000)
   .attr("x", d => newXScale(d[chosenAxis])-r/2)
+  .attr("fill", "darkblue");
+  return cirLabelGroup;
+  };
+
+  //**********************************************************************/
+//function used for updating label of circles (state abbreviation)
+//using render function clears previous marker location
+function renderYCircLabel(cirLabelGroup,newYScale, chosenAxis,r) {
+  cirLabelGroup.transition()
+  .duration(1000)
+  .attr("y", d => newYScale(d[chosenAxis])-r/2)
   .attr("fill", "darkblue");
   return cirLabelGroup;
   };
@@ -222,7 +263,7 @@ labelsXGroup.selectAll("text")
 
       chosenXAxis = value;
       xLinearScale = xScale(healthData, chosenXAxis);
-      xAxis = renderAxes(xLinearScale,xAxis);
+      xAxis = renderXAxes(xLinearScale,xAxis);
 
       if (chosenXAxis === "poverty") {
         axisNum = 0;
@@ -247,8 +288,8 @@ labelsXGroup.selectAll("text")
           .attr("x",0);
       };
 
-    circlesGroup = renderCircles(circlesGroup, xLinearScale, chosenXAxis, cirColor[axisNum]);
-    cirLabelGroup = renderCircLabel(cirLabelGroup,xLinearScale, chosenXAxis,r);
+    circlesGroup = renderXCircles(circlesGroup, xLinearScale, chosenXAxis, cirColor[axisNum]);
+    cirLabelGroup = renderXCircLabel(cirLabelGroup,xLinearScale, chosenXAxis,r);
 
     };
     
