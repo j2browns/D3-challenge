@@ -1,4 +1,10 @@
-// @TODO: YOUR CODE HERE!
+//Homework 16 - D3 Plots
+// Jeff Brown
+//This home work focuses on using D3 to make a custom graph with selectable axis values 
+//and transitional features when changing selections.
+//It also makes use of tool tips to show values of data points.
+
+//Setting display window
 var svgWidth = 960;
 var svgHeight = 500;
 
@@ -9,6 +15,7 @@ var margin = {
   left: 100
 };
 
+//setting height and width of plot region
 var width = svgWidth - margin.left - margin.right;
 var height = svgHeight - margin.top - margin.bottom;
 
@@ -23,7 +30,7 @@ var svg = d3
 var chartGroup = svg.append("g")
   .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-var chosenXAxis = "poverty"; //setting initial axis
+var chosenXAxis = "poverty"; //setting initial axis value to display on graph
 
 //**********************************************************************/
 //****************Defining Functions ***********************************/
@@ -32,10 +39,10 @@ var chosenXAxis = "poverty"; //setting initial axis
 function xScale(passData,chosenAxis) {
   //create scales
   var xLinearScale = d3.scaleLinear()
-      .domain([d3.min(passData, d => d[chosenAxis])*0.9, d3.max(passData, d => d[chosenAxis])*1.2])
+    // Axis is set to have minimum at 85% of data minimum and 115% of maximum so looks nicely placed on axis
+      .domain([d3.min(passData, d => d[chosenAxis])*0.85, d3.max(passData, d => d[chosenAxis])*1.15])
       .range([0, width]);
     return xLinearScale
-
 };
 
 // function used for updating xAxis var upon click on axis label
