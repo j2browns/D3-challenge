@@ -34,8 +34,10 @@ var svg = d3
 var chartGroup = svg.append("g")
   .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
+  //setting some initial values 
 var chosenXAxis = "poverty"; //setting initial axis value to display on graph
-var axisNum = 0;
+var chosenYAxis  = "healthcare"
+var axisXNum = 0;
 cirColor = ["lightblue", "yellow"]
 //**********************************************************************/
 //****************Defining Functions ***********************************/
@@ -142,6 +144,7 @@ d3.csv(url).then(function(healthData) {
         data.poverty = +data.poverty;
         data.healthcare = +data.healthcare;
         data.income = +data.income;
+        data.obesity = +data.obesity;
       });
 
     //setting up initial plot
@@ -230,7 +233,7 @@ var incomeLabel = labelsXGroup.append("text")
   var toolTip = d3.tip()
     .attr("class", "tooltip")
     .offset([80, -60])
-    .style("background",cirColor[(1-axisNum)])
+    .style("background",cirColor[(1-axisXNum)])
     .html(function(d) {
       return (`${d.state}<br>Poverty: ${d.poverty}<br> Median Income: ${d.income}<br> Lacking Healthcare: ${d.healthcare}`);
     });
@@ -243,14 +246,14 @@ var incomeLabel = labelsXGroup.append("text")
 // ==============================
   circlesGroup.on("mouseover", function(data) {
     d3.select(this).attr("opacity", "1");//make fill solid
-    d3.select(this).attr("fill", cirColor[(1-axisNum)]);//change color
+    d3.select(this).attr("fill", cirColor[(1-axisXNum)]);//change color
     toolTip.show(data, this)
-    .style("background",cirColor[(1-axisNum)]);//makes circle and tool tip data box have same color
+    .style("background",cirColor[(1-axisXNum)]);//makes circle and tool tip data box have same color
   })
 // onmouseout event - clearing on mouse out
     .on("mouseout", function(data, index) {
       d3.select(this).attr("opacity", "0.75");//back to original opacity
-      d3.select(this).attr("fill", cirColor[axisNum]);//back to original color
+      d3.select(this).attr("fill", cirColor[axisXNum]);//back to original color
       toolTip.hide(data);
     });
 
@@ -288,7 +291,7 @@ labelsXGroup.selectAll("text")
           .attr("x",0);
       };
 
-    circlesGroup = renderXCircles(circlesGroup, xLinearScale, chosenXAxis, cirColor[axisNum]);
+    circlesGroup = renderXCircles(circlesGroup, xLinearScale, chosenXAxis, cirColor[axisXNum]);
     cirLabelGroup = renderXCircLabel(cirLabelGroup,xLinearScale, chosenXAxis,r);
 
     };
