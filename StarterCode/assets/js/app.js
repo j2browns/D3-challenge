@@ -4,6 +4,10 @@
 //and transitional features when changing selections.
 //It also makes use of tool tips to show values of data points.
 
+//The code plots the % lacking healthcare on the Y axis and the % in poverty and the median income on the x axis.
+//The user can select between %in poverty and median income on the x axis and the plot will update and use transitions.
+//User can also move the mouse over a point and see the data (using tool tips)
+
 //Setting display window
 var svgWidth = 960;
 var svgHeight = 500;
@@ -35,6 +39,7 @@ var chosenXAxis = "poverty"; //setting initial axis value to display on graph
 //**********************************************************************/
 //****************Defining Functions ***********************************/
 
+//**********************************************************************/
 // function used for updating x-scale var upon click on axis label
 function xScale(passData,chosenAxis) {
   //create scales
@@ -45,6 +50,7 @@ function xScale(passData,chosenAxis) {
     return xLinearScale
 };
 
+//**********************************************************************/
 // function used for updating xAxis var upon click on axis label
 function renderAxes(newXScale, xAxis) {
   var bottomAxis = d3.axisBottom(newXScale);
@@ -56,59 +62,57 @@ function renderAxes(newXScale, xAxis) {
   return xAxis;
 };
 
-// function used for updating circles group with a transition to
-// new circles
-
+//**********************************************************************/
+// function used for updating circles when switch axis
 function renderCircles(circlesGroup, newXScale, chosenAxis) {
-
   circlesGroup.transition()
     .duration(1000)
     .attr("cx", d => newXScale(d[chosenAxis]));
-
   return circlesGroup;
 };
 
+//**********************************************************************/
+//function used for updating label of circles (state abbreviation)
 function renderCircLabel(cirLabelGroup,newXScale, chosenAxis,r) {
   cirLabelGroup.transition()
   .duration(1000)
   .attr("x", d => newXScale(d[chosenAxis])-r/2)
   .attr("fill", "darkblue");
-
   return cirLabelGroup;
   };
 
 ///*******************Loading Data into d3******************/
-
 var url = "./assets/data/data.csv"; //location of data
 
 d3.csv(url).then(function(healthData) {
     
+  //code below is used to check input data set on console - used for debugging
     console.log(Object.keys(healthData[0])); //for error checking and to verify keys
-    
-    // console.log(dataKeys);
     for (i = 0; i<healthData.length; i++) {
         console.log(healthData[i].state + " abbr:  " + healthData[i].abbr);
      };
-
     console.log(healthData[1].healthcare)
     
+    //making certain all data is in number not string.
     healthData.forEach(function(data) {
         data.poverty = +data.poverty;
         data.healthcare = +data.healthcare;
         data.income = +data.income;
       });
 
+    //setting up initial plot
+    //setting x axis values
     var xLinearScale = xScale(healthData, chosenXAxis);
-
+    //setting y axis values
     var yLinearScale = d3.scaleLinear()
       .domain([0, d3.max(healthData, d => d.healthcare)])
       .range([height, 0]);
 
-   
+    //assigning bottom and left axis
     var bottomAxis = d3.axisBottom(xLinearScale);
     var leftAxis = d3.axisLeft(yLinearScale);
 
-   
+   //assiging group for chart.  
     var xAxis = chartGroup.append("g")
       .classed("x-axis", true)
       .attr("transform", `translate(0, ${height})`)
@@ -116,9 +120,11 @@ d3.csv(url).then(function(healthData) {
 
     chartGroup.append("g")
       .call(leftAxis);
-    
+  
+  //Drawing data points
   var r = 20; //radius for circles
-      
+  //inserting circles into html using svg
+  //chosenXAxis is the intial set parameter    
   var circlesGroup = chartGroup.selectAll(".circle")
     .data(healthData)
     .enter()
@@ -131,12 +137,12 @@ d3.csv(url).then(function(healthData) {
     .attr("fill", "lightblue")
     .attr("opacity", "0.75");
     
-
+//Setting labels (state abbreviation) for points
 var cirLabelGroup = chartGroup.selectAll(".text") 
   .data(healthData)
   .enter()
   .append("text") 
-  .attr("x", d => xLinearScale(d[chosenXAxis])-r/2)
+  .attr("x", d => xLinearScale(d[chosenXAxis])-r/2) //offsetting by radius to get correct placement of points
   .attr("y", d => yLinearScale(d.healthcare)+r/2)
   .attr("font-family", "sans-serif")
   .attr("font-size", "10px")
@@ -157,19 +163,21 @@ chartGroup.append("text")
 var labelsGroup = chartGroup.append("g")
   .attr("transform", `translate(${width / 2}, ${height + margin.top + 30})`);
 
+
+//Placing poverty label
 var povertyLabel = labelsGroup.append("text")
   .attr("x",0)
   .attr("y",20)
   .attr("value", "poverty")//value for event listener
   .classed("active",true)
   .text("% in Poverty");
-
+//Placing House Hold Median Income label
 var incomeLabel = labelsGroup.append("text")
   .attr("x",0)
   .attr("y",40)
   .attr("value", "income")//value for event listener
   .classed("active",true)
-  .text("House Hold Median Income");
+  .text("House Hold Median Income ($)");
 
 //*******************Tool Tip Section*********************************/    
 //  Initialize tool tip
