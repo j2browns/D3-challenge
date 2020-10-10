@@ -73,6 +73,7 @@ function renderCircles(circlesGroup, newXScale, chosenAxis) {
 
 //**********************************************************************/
 //function used for updating label of circles (state abbreviation)
+//using render function clears previous marker location
 function renderCircLabel(cirLabelGroup,newXScale, chosenAxis,r) {
   cirLabelGroup.transition()
   .duration(1000)
@@ -193,17 +194,17 @@ var incomeLabel = labelsGroup.append("text")
 // ==============================
   chartGroup.call(toolTip);
 
-//  Create event listeners to display and hide the tooltip
+//  Create event listeners to display and hide the tooltip.  Use mouse over because seems easier to use (finding point)
 // ==============================
   circlesGroup.on("mouseover", function(data) {
-    d3.select(this).attr("opacity", "1");
-    d3.select(this).attr("fill", "yellow");
+    d3.select(this).attr("opacity", "1");//make fill solid
+    d3.select(this).attr("fill", "yellow");//change color
     toolTip.show(data, this);
   })
-// onmouseout event
+// onmouseout event - clearing on mouse out
     .on("mouseout", function(data, index) {
-      d3.select(this).attr("opacity", "0.75");
-      d3.select(this).attr("fill", "lightblue");
+      d3.select(this).attr("opacity", "0.75");//back to original opacity
+      d3.select(this).attr("fill", "lightblue");//back to original color
       toolTip.hide(data);
     });
 
@@ -211,7 +212,7 @@ var incomeLabel = labelsGroup.append("text")
 //Selecting axis value with mouse
 labelsGroup.selectAll("text")
   .on("click", function() {
-    var value = d3.select(this).attr("value");
+    var value = d3.select(this).attr("value");//"this" refers to selected element
     if (value !== chosenXAxis) {
 
       chosenXAxis = value;
@@ -245,7 +246,7 @@ labelsGroup.selectAll("text")
 
  
  
-}).catch(function(error){console.log(error)});
+}).catch(function(error){console.log(error)}); //error handling
 
 
 
