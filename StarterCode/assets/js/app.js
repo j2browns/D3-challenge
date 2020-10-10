@@ -65,10 +65,10 @@ function renderAxes(newXScale, xAxis) {
 
 //**********************************************************************/
 // function used for updating circles when switch axis
-function renderCircles(circlesGroup, newXScale, chosenAxis, cirColor) {
+function renderCircles(circlesGroup, newXScale, chosenXAxis, cirColor) {
   circlesGroup.transition()
     .duration(1000)
-    .attr("cx", d => newXScale(d[chosenAxis]))
+    .attr("cx", d => newXScale(d[chosenXAxis]))
     .attr("fill", cirColor);
   return circlesGroup;
 };
@@ -163,19 +163,19 @@ chartGroup.append("text")
    .attr("class", "axisText")
    .text("% Lacking Healthcare");
 
-var labelsGroup = chartGroup.append("g")
-  .attr("transform", `translate(${width / 2}, ${height + margin.top + 30})`);
+var labelsXGroup = chartGroup.append("g")
+  .attr("transform", `translate(${width / 2}, ${height + margin.top + 10})`);
 
 
 //Placing poverty label
-var povertyLabel = labelsGroup.append("text")
+var povertyLabel = labelsXGroup.append("text")
   .attr("x",0)
   .attr("y",5)
   .attr("value", "poverty")//value for event listener
   .classed("active",true)
   .text("% in Poverty");
 //Placing House Hold Median Income label
-var incomeLabel = labelsGroup.append("text")
+var incomeLabel = labelsXGroup.append("text")
   .attr("x",0)
   .attr("y",25)
   .attr("value", "income")//value for event listener
@@ -214,8 +214,8 @@ var incomeLabel = labelsGroup.append("text")
     });
 
 
-//Selecting axis value with mouse
-labelsGroup.selectAll("text")
+//Selecting X axis value with mouse
+labelsXGroup.selectAll("text")
   .on("click", function() {
     var value = d3.select(this).attr("value");//"this" refers to selected element
     if (value !== chosenXAxis) {
@@ -224,7 +224,6 @@ labelsGroup.selectAll("text")
       xLinearScale = xScale(healthData, chosenXAxis);
       xAxis = renderAxes(xLinearScale,xAxis);
 
-      
       if (chosenXAxis === "poverty") {
         axisNum = 0;
         povertyLabel
