@@ -125,7 +125,7 @@ d3.csv(url).then(function(healthData) {
       .call(leftAxis);
   
   //Drawing data points
-  var r = 20; //radius for circles
+  var r = 10; //radius for circles
   //inserting circles into html using svg
   //chosenXAxis is the intial set parameter    
   var circlesGroup = chartGroup.selectAll(".circle")
@@ -170,16 +170,17 @@ var labelsGroup = chartGroup.append("g")
 //Placing poverty label
 var povertyLabel = labelsGroup.append("text")
   .attr("x",0)
-  .attr("y",20)
+  .attr("y",5)
   .attr("value", "poverty")//value for event listener
   .classed("active",true)
   .text("% in Poverty");
 //Placing House Hold Median Income label
 var incomeLabel = labelsGroup.append("text")
   .attr("x",0)
-  .attr("y",40)
+  .attr("y",25)
   .attr("value", "income")//value for event listener
-  .classed("active",true)
+  .classed("active", false)
+  .classed("inactive", true)
   .text("House Hold Median Income ($)");
 
 //*******************Tool Tip Section*********************************/    
@@ -228,19 +229,23 @@ labelsGroup.selectAll("text")
         axisNum = 0;
         povertyLabel
           .classed("active", true)
-          .classed("inactive", false);
+          .classed("inactive", false)
+          .attr("x",0);
         incomeLabel
           .classed("active", false)
-          .classed("inactive", true);
+          .classed("inactive", true)
+          .attr("x",0);
       }
       else {
         axisNum = 1;
         povertyLabel
           .classed("active", false)
-          .classed("inactive", true);
+          .classed("inactive", true)
+          .attr("x",0);
         incomeLabel
           .classed("active", true)
-          .classed("inactive", false);
+          .classed("inactive", false)
+          .attr("x",0);
       };
 
     circlesGroup = renderCircles(circlesGroup, xLinearScale, chosenXAxis, cirColor[axisNum]);
