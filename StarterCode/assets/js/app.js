@@ -62,7 +62,7 @@ function yScale(passData,chosenAxis) {
   //create scales
   var yLinearScale = d3.scaleLinear()
     // Axis is set to have minimum at 85% of data minimum and 115% of maximum so looks nicely placed on axis
-      .domain([d3.min(passData, d => d[chosenAxis])*0, d3.max(passData, d => d[chosenAxis])*1.15])
+      .domain([d3.min(passData, d => d[chosenAxis])*0.70, d3.max(passData, d => d[chosenAxis])*1.15])
       .range([height, 0]);
     return yLinearScale
 };
@@ -125,7 +125,7 @@ function renderXCircLabel(cirLabelGroup,newXScale, chosenAxis,r) {
 function renderYCircLabel(cirLabelGroup,newYScale, chosenAxis,r) {
   cirLabelGroup.transition()
   .duration(1000)
-  .attr("y", d => newYScale(d[chosenAxis])-r/2)
+  .attr("y", d => newYScale(d[chosenAxis])+r/2)
   .attr("fill", "darkblue");
   return cirLabelGroup;
   };
@@ -174,7 +174,7 @@ d3.csv(url).then(function(healthData) {
       .call(leftAxis);
   
   //Drawing data points
-  var r = 10; //radius for circles
+  var r = 12; //radius for circles
   //inserting circles into html using svg
   //chosenXAxis is the intial set parameter    
   var circlesGroup = chartGroup.selectAll(".circle")
@@ -187,7 +187,7 @@ d3.csv(url).then(function(healthData) {
     .attr("stroke", "black")
     .attr("stroke-width", "2")
     .attr("fill", "lightblue")
-    .attr("opacity", "0.75");
+    .attr("opacity", "0.50");
     
 //Setting labels (state abbreviation) for points
 var cirLabelGroup = chartGroup.selectAll(".text") 
@@ -208,7 +208,7 @@ var labelsYGroup = chartGroup.append("g");
 var healthcareLabel = labelsYGroup.append("text")
    .attr("transform", "rotate(-90)")
    .attr("y", 0 - margin.left +20)
-   .attr("x", 0 - (height / 2 + 0))
+   .attr("x", 0 - (height / 2 + 00))
    .attr("dy", "1em")
    .attr("value", "healthcare")
    .attr("class", "axisText")
@@ -219,7 +219,7 @@ var healthcareLabel = labelsYGroup.append("text")
 var obesityLabel = labelsYGroup.append("text")
    .attr("transform", "rotate(-90)")
    .attr("y", 0 - margin.left +45)
-   .attr("x", 0 - (height / 2 +0 ))
+   .attr("x", 0 - (height / 2 +00 ))
    .attr("dy", "1em")
    .attr("value", "obesity")
    .attr("class", "axisText")
@@ -256,9 +256,9 @@ var incomeLabel = labelsXGroup.append("text")
   var toolTip = d3.tip()
     .attr("class", "tooltip")
     .offset([80, -60])
-    .style("background",cirColor[(1-axisXNum)])
     .html(function(d) {
-      return (`${d.state}<br>Poverty: ${d.poverty}<br> Median Income: ${d.income}<br> Lacking Healthcare: ${d.healthcare}`);
+      return (`${d.state}<br>% Poverty: ${d.poverty}<br> Median Income: ${d.income}<br> \
+      % Lacking Healthcare: ${d.healthcare} <br>% Obesisty ${d.obesity}`);
     });
 
 //  Create tooltip in the chart
@@ -275,7 +275,7 @@ var incomeLabel = labelsXGroup.append("text")
   })
 // onmouseout event - clearing on mouse out
     .on("mouseout", function(data, index) {
-      d3.select(this).attr("opacity", "0.75");//back to original opacity
+      d3.select(this).attr("opacity", "0.50");//back to original opacity
       d3.select(this).attr("fill", cirColor[axisXNum]);//back to original color
       toolTip.hide(data);
     });
@@ -327,34 +327,34 @@ labelsYGroup.selectAll("text")
   if (value !== chosenYAxis) {
 
     chosenYAxis = value;
-    YLinearScale = yScale(healthData, chosenYAxis);
-    YAxis = renderYAxes(yLinearScale,yAxis);
+    yLinearScale = yScale(healthData, chosenYAxis);
+    yAxis = renderYAxes(yLinearScale,yAxis);
 
     if (chosenYAxis === "healthcare") {
       axisYNum = 0;
       healthcareLabel
         .classed("active", true)
         .classed("inactive", false)
-        .attr("y",0);
+        .attr("y",-70);
       obesityLabel
         .classed("active", false)
         .classed("inactive", true)
-        .attr("y",0);
+        .attr("y",-50);
     }
     else {
       axisYNum = 1;
       healthcareLabel
         .classed("active", false)
         .classed("inactive", true)
-        .attr("x",0);
+        .attr("y",-70);
         obesityLabel
         .classed("active", true)
         .classed("inactive", false)
-        .attr("x",0);
+        .attr("y",-50);
     };
 
-  circlesGroup = renderYCircles(circlesGroup, xLinearScale, chosenYAxis, cirColor[axisXNum]);
-  cirLabelGroup = renderYCircLabel(cirLabelGroup,xLinearScale, chosenYAxis,r);
+  circlesGroup = renderYCircles(circlesGroup, yLinearScale, chosenYAxis, cirColor[axisXNum]);
+  cirLabelGroup = renderYCircLabel(cirLabelGroup,yLinearScale, chosenYAxis,r);
 
   };
     
