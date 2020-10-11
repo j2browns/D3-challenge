@@ -36,9 +36,12 @@ var chartGroup = svg.append("g")
 
   //setting some initial values 
 var chosenXAxis = "poverty"; //setting initial axis value to display on graph
-var chosenYAxis  = "healthcare"
+var chosenYAxis  = "healthcare";
 var axisXNum = 0;
 cirColor = ["lightblue", "yellow"]
+var axisYNum = 0;
+cirLine = ["yellow", "lightblue"]
+
 //**********************************************************************/
 //****************Defining Functions ***********************************/
 
@@ -55,14 +58,14 @@ function xScale(passData,chosenAxis) {
 
 //**********************************************************************/
 // function used for updating y-scale var upon click on axis label
-// function yScale(passData,chosenAxis) {
-//   //create scales
-//   var yLinearScale = d3.scaleLinear()
-//     // Axis is set to have minimum at 85% of data minimum and 115% of maximum so looks nicely placed on axis
-//       .domain([d3.min(passData, d => d[chosenAxis])*0.85, d3.max(passData, d => d[chosenAxis])*1.15])
-//       .range([0, height]);
-//     return yLinearScale
-// };
+function yScale(passData,chosenAxis) {
+  //create scales
+  var yLinearScale = d3.scaleLinear()
+    // Axis is set to have minimum at 85% of data minimum and 115% of maximum so looks nicely placed on axis
+      .domain([d3.min(passData, d => d[chosenAxis])*0, d3.max(passData, d => d[chosenAxis])*1.15])
+      .range([height, 0]);
+    return yLinearScale
+};
 //**********************************************************************/
 // function used for updating xAxis var upon click on axis label
 function renderXAxes(newXScale, xAxis) {
@@ -77,8 +80,8 @@ function renderXAxes(newXScale, xAxis) {
 
 //**********************************************************************/
 // function used for updating xAxis var upon click on axis label
-function renderYAxes(newYScale, YAxis) {
-  var bottomAxis = d3.axisLeft(newYScale);
+function renderYAxes(newYScale, yAxis) {
+  var leftAxis = d3.axisLeft(newYScale);
 
   yAxis.transition()
     .duration(1000)
@@ -101,7 +104,7 @@ function renderXCircles(circlesGroup, newXScale, chosenXAxis, cirColor) {
 function renderYCircles(circlesGroup, newYScale, chosenYAxis, cirColor) {
   circlesGroup.transition()
     .duration(1000)
-    .attr("cy", d => newXScale(d[chosenYAxis]))
+    .attr("cy", d => newYScale(d[chosenYAxis]))
     .attr("fill", cirColor);
   return circlesGroup;
 };
@@ -151,21 +154,23 @@ d3.csv(url).then(function(healthData) {
     //setting x axis values
     var xLinearScale = xScale(healthData, chosenXAxis);
     //setting y axis values
-    var yLinearScale = d3.scaleLinear()
-      .domain([0, d3.max(healthData, d => d.healthcare)])
-      .range([height, 0]);
+    var yLinearScale = yScale(healthData,chosenYAxis);
+    // var yLinearScale = d3.scaleLinear()
+    //   .domain([0, d3.max(healthData, d => d.healthcare)])
+    //   .range([height, 0]);
 
     //assigning bottom and left axis
     var bottomAxis = d3.axisBottom(xLinearScale);
     var leftAxis = d3.axisLeft(yLinearScale);
 
-   //assiging group for chart.  
+    
     var xAxis = chartGroup.append("g")
       .classed("x-axis", true)
       .attr("transform", `translate(0, ${height})`)
       .call(bottomAxis);
-
-    chartGroup.append("g")
+    
+    var yAxis = chartGroup.append("g")
+      .classed("y-axis", true)
       .call(leftAxis);
   
   //Drawing data points
@@ -177,7 +182,7 @@ d3.csv(url).then(function(healthData) {
     .enter()
     .append("circle")
     .attr("cx", d => xLinearScale(d[chosenXAxis]))
-    .attr("cy", d => yLinearScale(d.healthcare))
+    .attr("cy", d => yLinearScale(d[chosenYAxis]))
     .attr("r", r)
     .attr("stroke", "black")
     .attr("stroke-width", "2")
@@ -190,7 +195,7 @@ var cirLabelGroup = chartGroup.selectAll(".text")
   .enter()
   .append("text") 
   .attr("x", d => xLinearScale(d[chosenXAxis])-r/2) //offsetting by radius to get correct placement of points
-  .attr("y", d => yLinearScale(d.healthcare)+r/2)
+  .attr("y", d => yLinearScale(d[chosenYAxis])+r/2)
   .attr("font-family", "sans-serif")
   .attr("font-size", "10px")
   .attr("fill", "black")
@@ -198,19 +203,35 @@ var cirLabelGroup = chartGroup.selectAll(".text")
       return (d.abbr);
   });
 
+var labelsYGroup = chartGroup.append("g");
 // Create axes labels
-chartGroup.append("text")
+var healthcareLabel = labelsYGroup.append("text")
    .attr("transform", "rotate(-90)")
    .attr("y", 0 - margin.left +20)
-   .attr("x", 0 - (height / 2 + 50))
+   .attr("x", 0 - (height / 2 + 0))
    .attr("dy", "1em")
+   .attr("value", "healthcare")
    .attr("class", "axisText")
+   .classed("active",true)
+   .classed("inactive", false)
    .text("% Lacking Healthcare");
+
+var obesityLabel = labelsYGroup.append("text")
+   .attr("transform", "rotate(-90)")
+   .attr("y", 0 - margin.left +45)
+   .attr("x", 0 - (height / 2 +0 ))
+   .attr("dy", "1em")
+   .attr("value", "obesity")
+   .attr("class", "axisText")
+   .classed("active", false)
+  .classed("inactive", true)
+   .text("% with Obesity");
+
 
 var labelsXGroup = chartGroup.append("g")
   .attr("transform", `translate(${width / 2}, ${height + margin.top + 10})`);
 
-
+//Placing x axis labels
 //Placing poverty label
 var povertyLabel = labelsXGroup.append("text")
   .attr("x",0)
@@ -226,6 +247,8 @@ var incomeLabel = labelsXGroup.append("text")
   .classed("active", false)
   .classed("inactive", true)
   .text("House Hold Median Income ($)");
+
+
 
 //*******************Tool Tip Section*********************************/    
 //  Initialize tool tip
@@ -269,7 +292,7 @@ labelsXGroup.selectAll("text")
       xAxis = renderXAxes(xLinearScale,xAxis);
 
       if (chosenXAxis === "poverty") {
-        axisNum = 0;
+        axisXNum = 0;
         povertyLabel
           .classed("active", true)
           .classed("inactive", false)
@@ -280,7 +303,7 @@ labelsXGroup.selectAll("text")
           .attr("x",0);
       }
       else {
-        axisNum = 1;
+        axisXNum = 1;
         povertyLabel
           .classed("active", false)
           .classed("inactive", true)
@@ -295,6 +318,45 @@ labelsXGroup.selectAll("text")
     cirLabelGroup = renderXCircLabel(cirLabelGroup,xLinearScale, chosenXAxis,r);
 
     };
+  });
+
+//  //Selecting Y axis value with mouse
+labelsYGroup.selectAll("text")
+.on("click", function() {
+  var value = d3.select(this).attr("value");//"this" refers to selected element
+  if (value !== chosenYAxis) {
+
+    chosenYAxis = value;
+    YLinearScale = yScale(healthData, chosenYAxis);
+    YAxis = renderYAxes(yLinearScale,yAxis);
+
+    if (chosenYAxis === "healthcare") {
+      axisYNum = 0;
+      healthcareLabel
+        .classed("active", true)
+        .classed("inactive", false)
+        .attr("y",0);
+      obesityLabel
+        .classed("active", false)
+        .classed("inactive", true)
+        .attr("y",0);
+    }
+    else {
+      axisYNum = 1;
+      healthcareLabel
+        .classed("active", false)
+        .classed("inactive", true)
+        .attr("x",0);
+        obesityLabel
+        .classed("active", true)
+        .classed("inactive", false)
+        .attr("x",0);
+    };
+
+  circlesGroup = renderYCircles(circlesGroup, xLinearScale, chosenYAxis, cirColor[axisXNum]);
+  cirLabelGroup = renderYCircLabel(cirLabelGroup,xLinearScale, chosenYAxis,r);
+
+  };
     
   });
 
