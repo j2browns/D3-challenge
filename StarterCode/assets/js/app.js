@@ -31,10 +31,11 @@ var svg = d3
   .attr("width", svgWidth)
   .attr("height", svgHeight);
 
+//Creating master chartgroup object
 var chartGroup = svg.append("g")
   .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-  //setting some initial values 
+//setting some initial values 
 var chosenXAxis = "poverty"; //setting initial axis value to display on graph
 var chosenYAxis  = "healthcare";
 var axisXNum = 0;
@@ -79,7 +80,7 @@ function renderXAxes(newXScale, xAxis) {
 };
 
 //**********************************************************************/
-// function used for updating xAxis var upon click on axis label
+// function used for updating YAxis var upon click on axis label
 function renderYAxes(newYScale, yAxis) {
   var leftAxis = d3.axisLeft(newYScale);
 
@@ -110,7 +111,7 @@ function renderYCircles(circlesGroup, newYScale, chosenYAxis, cirColor) {
 };
 //**********************************************************************/
 //function used for updating label of circles (state abbreviation)
-//using render function clears previous marker location
+//for x axis using render function clears previous marker location
 function renderXCircLabel(cirLabelGroup,newXScale, chosenAxis,r) {
   cirLabelGroup.transition()
   .duration(1000)
@@ -121,7 +122,7 @@ function renderXCircLabel(cirLabelGroup,newXScale, chosenAxis,r) {
 
   //**********************************************************************/
 //function used for updating label of circles (state abbreviation)
-//using render function clears previous marker location
+//using for y axis render function clears previous marker location
 function renderYCircLabel(cirLabelGroup,newYScale, chosenAxis,r) {
   cirLabelGroup.transition()
   .duration(1000)
@@ -137,9 +138,9 @@ d3.csv(url).then(function(healthData) {
     
   //code below is used to check input data set on console - used for debugging
     console.log(Object.keys(healthData[0])); //for error checking and to verify keys
-    for (i = 0; i<healthData.length; i++) {
-        console.log(healthData[i].state + " abbr:  " + healthData[i].abbr);
-     };
+    // for (i = 0; i<healthData.length; i++) {
+    //     console.log(healthData[i].state + " abbr:  " + healthData[i].abbr);
+    //  };
     console.log(healthData[1].healthcare)
     
     //making certain all data is in number not string.
@@ -150,31 +151,31 @@ d3.csv(url).then(function(healthData) {
         data.obesity = +data.obesity;
       });
 
-    //setting up initial plot
+    //*******setting up initial plot with default data********************
+
     //setting x axis values
     var xLinearScale = xScale(healthData, chosenXAxis);
     //setting y axis values
     var yLinearScale = yScale(healthData,chosenYAxis);
-    // var yLinearScale = d3.scaleLinear()
-    //   .domain([0, d3.max(healthData, d => d.healthcare)])
-    //   .range([height, 0]);
-
+    
     //assigning bottom and left axis
     var bottomAxis = d3.axisBottom(xLinearScale);
     var leftAxis = d3.axisLeft(yLinearScale);
 
-    
+    //adding x axis into html
     var xAxis = chartGroup.append("g")
       .classed("x-axis", true)
       .attr("transform", `translate(0, ${height})`)
       .call(bottomAxis);
     
+    // adding y axis into html
     var yAxis = chartGroup.append("g")
       .classed("y-axis", true)
       .call(leftAxis);
   
   //Drawing data points
   var r = 12; //radius for circles
+
   //inserting circles into html using svg
   //chosenXAxis is the intial set parameter    
   var circlesGroup = chartGroup.selectAll(".circle")
@@ -203,6 +204,7 @@ var cirLabelGroup = chartGroup.selectAll(".text")
       return (d.abbr);
   });
 
+//setting up y axis labels
 var labelsYGroup = chartGroup.append("g");
 // Create axes labels
 var healthcareLabel = labelsYGroup.append("text")
@@ -288,9 +290,11 @@ labelsXGroup.selectAll("text")
     if (value !== chosenXAxis) {
 
       chosenXAxis = value;
+      //redrawing axis
       xLinearScale = xScale(healthData, chosenXAxis);
       xAxis = renderXAxes(xLinearScale,xAxis);
 
+      //setting parameters for chosen axis and not selected for visibility
       if (chosenXAxis === "poverty") {
         axisXNum = 0;
         povertyLabel
@@ -313,7 +317,8 @@ labelsXGroup.selectAll("text")
           .classed("inactive", false)
           .attr("x",0);
       };
-
+    
+    //redrawing data points and state labels
     circlesGroup = renderXCircles(circlesGroup, xLinearScale, chosenXAxis, cirColor[axisXNum]);
     cirLabelGroup = renderXCircLabel(cirLabelGroup,xLinearScale, chosenXAxis,r);
 
@@ -335,24 +340,24 @@ labelsYGroup.selectAll("text")
       healthcareLabel
         .classed("active", true)
         .classed("inactive", false)
-        .attr("y",-70);
+        .attr("y",-80);
       obesityLabel
         .classed("active", false)
         .classed("inactive", true)
-        .attr("y",-50);
+        .attr("y",-60);
     }
     else {
       axisYNum = 1;
       healthcareLabel
         .classed("active", false)
         .classed("inactive", true)
-        .attr("y",-70);
+        .attr("y",-80);
         obesityLabel
         .classed("active", true)
         .classed("inactive", false)
-        .attr("y",-50);
+        .attr("y",-60);
     };
-
+  //redrawing circles and state labels (after change of axis)
   circlesGroup = renderYCircles(circlesGroup, yLinearScale, chosenYAxis, cirColor[axisXNum]);
   cirLabelGroup = renderYCircLabel(cirLabelGroup,yLinearScale, chosenYAxis,r);
 
@@ -361,9 +366,7 @@ labelsYGroup.selectAll("text")
   });
 
 
-
- 
- 
+//catching and logging errors 
 }).catch(function(error){console.log(error)}); //error handling
 
 
